@@ -76,17 +76,34 @@ const Form = ({ newPost }) => {
 
   const addTag = (e) => {
     e.preventDefault();
-    if (
-      formData.tags.length < 5 &&
-      newTag.trim() !== "" &&
-      !formData.tags.includes(newTag.trim())
-    ) {
+
+    let valid = true;
+    const errors = { ...formErrors };
+
+    if (formData.tags.length >= 5) {
+      errors.tags = "Max five tags allowed";
+      valid = false;
+    }
+
+    if (newTag.trim() === "") {
+      errors.tags = "Tag cannot be empty";
+      valid = false;
+    }
+
+    if (formData.tags.includes(newTag.trim())) {
+      errors.tags = "Tag already exists";
+      valid = false;
+    }
+
+    if (valid) {
       setFormData((prevFormData) => ({
         ...prevFormData,
         tags: [...prevFormData.tags, newTag.trim()],
       }));
       setNewTag("");
     }
+
+    setFormErrors(errors);
   };
 
   const deleteTag = (indexToDelete) => {
