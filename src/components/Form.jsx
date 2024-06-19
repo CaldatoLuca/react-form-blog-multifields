@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdDelete } from "react-icons/md";
 
 const baseData = {
@@ -16,6 +16,28 @@ const categories = ["Technology", "Health", "Science", "Education", "Business"];
 const Form = ({ newPost }) => {
   const [formData, setFormData] = useState(baseData);
   const [newTag, setNewTag] = useState("");
+  const [formErrors, setFormErrors] = useState({
+    id: "",
+    title: "",
+    image: "",
+    content: "",
+    tags: "",
+    published: "",
+    category: "",
+  });
+
+  const validateForm = () => {
+    let valid = true;
+    const errors = {};
+
+    if (formData.title.trim() === "") {
+      errors.title = "Title is required";
+      valid = false;
+    }
+
+    setFormErrors(errors);
+    return valid;
+  };
 
   const handleFormData = (e) => {
     const { name, value } = e.target;
@@ -53,9 +75,13 @@ const Form = ({ newPost }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
 
-    newPost(formData);
+    if (validateForm()) {
+      console.log(formData);
+      newPost(formData);
+    } else {
+      console.log("Form is invalid");
+    }
 
     setFormData(baseData);
   };
@@ -76,8 +102,13 @@ const Form = ({ newPost }) => {
               name="title"
               value={formData.title}
               onChange={handleFormData}
-              className="mb-2 rounded-md bg-slate-500 bg-opacity-50 p-1 cursor-pointer focus:outline-none focus:border-transparent"
+              className={`rounded-md bg-slate-500 bg-opacity-50 p-1 cursor-pointer focus:outline-none focus:border-transparent ${
+                formErrors.title ? "border border-red-500" : ""
+              }`}
             />
+            {formErrors.title && (
+              <span className="text-red-400 text-sm">{formErrors.title}</span>
+            )}
           </label>
 
           {/* Content */}
@@ -129,7 +160,7 @@ const Form = ({ newPost }) => {
               </button>
             </div>
 
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-2 mb-2">
               {formData.tags.map((t, i) => (
                 <li
                   key={`tag-${i}`}
