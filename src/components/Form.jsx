@@ -25,6 +25,7 @@ const Form = ({ newPost }) => {
     published: "",
     category: "",
   });
+  const [success, setSuccess] = useState(false);
 
   const validateForm = () => {
     let valid = true;
@@ -35,16 +36,38 @@ const Form = ({ newPost }) => {
       valid = false;
     }
 
+    if (formData.content.trim() === "") {
+      errors.content = "Content is required";
+      valid = false;
+    }
+
+    if (formData.category.trim() === "") {
+      errors.category = "Category is required";
+      valid = false;
+    }
+
+    if (formData.tags.length === 0) {
+      errors.tags = "At least one tag is required";
+      valid = false;
+    }
+
     setFormErrors(errors);
     return valid;
   };
 
   const handleFormData = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: name === "published" ? value === "true" : value,
-    });
+    const { name, value, type } = e.target;
+    if (type === "radio") {
+      setFormData({
+        ...formData,
+        [name]: value === "true",
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleNewTag = (e) => {
@@ -77,17 +100,25 @@ const Form = ({ newPost }) => {
     e.preventDefault();
 
     if (validateForm()) {
-      console.log(formData);
       newPost(formData);
+      setSuccess(true);
+      setFormData(baseData);
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
     } else {
       console.log("Form is invalid");
     }
-
-    setFormData(baseData);
   };
 
   return (
     <div className="col-span-2">
+      {success && (
+        <div className="absolute bottom-5 right-5 p-5 rounded-md bg-emerald-500 animate-fadeOut">
+          Post created successfully
+        </div>
+      )}
+
       <div className="fixed">
         <h2 className="text-emerald-500 font-semibold text-lg mb-2 ">
           Create Post
@@ -102,7 +133,7 @@ const Form = ({ newPost }) => {
               name="title"
               value={formData.title}
               onChange={handleFormData}
-              className={`rounded-md bg-slate-500 bg-opacity-50 p-1 cursor-pointer focus:outline-none focus:border-transparent ${
+              className={`mb-2 rounded-md bg-slate-500 bg-opacity-50 p-1 cursor-pointer focus:outline-none focus:border-transparent ${
                 formErrors.title ? "border border-red-500" : ""
               }`}
             />
@@ -118,8 +149,13 @@ const Form = ({ newPost }) => {
               name="content"
               value={formData.content}
               onChange={handleFormData}
-              className="mb-2 rounded-md bg-slate-500 bg-opacity-50 p-1 cursor-pointer focus:outline-none focus:border-transparent"
+              className={`mb-2 rounded-md bg-slate-500 bg-opacity-50 p-1 cursor-pointer focus:outline-none focus:border-transparent ${
+                formErrors.content ? "border border-red-500" : ""
+              }`}
             />
+            {formErrors.content && (
+              <span className="text-red-400 text-sm">{formErrors.content}</span>
+            )}
           </label>
 
           {/* Category */}
@@ -129,7 +165,9 @@ const Form = ({ newPost }) => {
               name="category"
               value={formData.category}
               onChange={handleFormData}
-              className="mb-2 rounded-md bg-slate-500 bg-opacity-50 p-1 cursor-pointer focus:outline-none focus:border-transparent"
+              className={`mb-2 rounded-md bg-slate-500 bg-opacity-50 p-1 cursor-pointer focus:outline-none focus:border-transparent ${
+                formErrors.category ? "border border-red-500" : ""
+              }`}
             >
               <option value="" disabled>
                 Select a category
@@ -140,6 +178,11 @@ const Form = ({ newPost }) => {
                 </option>
               ))}
             </select>
+            {formErrors.category && (
+              <span className="text-red-400 text-sm">
+                {formErrors.category}
+              </span>
+            )}
           </label>
 
           {/* Tags */}
@@ -160,7 +203,7 @@ const Form = ({ newPost }) => {
               </button>
             </div>
 
-            <ul className="flex flex-col gap-2 mb-2">
+            <ul className="flex flex-col gap-2">
               {formData.tags.map((t, i) => (
                 <li
                   key={`tag-${i}`}
@@ -173,6 +216,9 @@ const Form = ({ newPost }) => {
                 </li>
               ))}
             </ul>
+            {formErrors.tags && (
+              <span className="text-red-400 text-sm">{formErrors.tags}</span>
+            )}
           </label>
 
           {/* Published */}
